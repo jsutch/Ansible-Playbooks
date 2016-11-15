@@ -1,0 +1,18 @@
+---
+- hosts: test
+  tasks:
+    - name: Install Python
+      apt: name=python state=installed
+
+    - name: Install sar  Tools
+      apt: name=sysstat state=installed
+
+    - name: Ensure git is installed
+      apt: name=git state=installed
+
+    - name: Create my user account
+      user: name=deploy comment='Deploy Account' shell=/bin/bash generate_ssh_key=yes ssh_key_bits=2048 
+
+    - name: Update deploy's RSA key 
+      authorized_key: user=deploy
+      key="{{ lookup('file', '~/Programming/Ansible/deploy_key.pub') }}"

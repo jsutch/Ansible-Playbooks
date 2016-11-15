@@ -1,0 +1,54 @@
+---
+- hosts: apps
+  vars: 
+    - website_dir: /www/PHP-Algos/
+    - ubuntu_home: /home/ubuntu/
+
+
+  tasks:
+    - name: Create website directory
+      file: dest={{ website_dir }} state=directory mode=775 owner=www-data group=www-data
+      become: yes
+
+    - name: copy OUTPUT file into place
+      copy: src=~/Programming/Ansible/OUTPUT dest={{ ubuntu_home }}/OUTPUT owner=ubuntu group=ubuntu mode=0644 backup=yes
+
+    # - name: Check on the status of the output file
+    # - stat: path=/home/ubuntu/OUTPUT
+    #   register: st
+    # - fail: msg="Whoops! file ownership has changed"
+    #   when: st.stat.pw_name != 'bob'
+
+    - name: Install PHP Packages
+      apt: name={{item}} state=installed
+      with_items:
+         - php
+         - libapache2-mod-php
+         - php-mcrypt
+         - php-mysql
+
+    - name: Ensure git is installed
+      apt: name=git state=installed update_cache=true
+
+# FAILING TO Deploy Into directory
+    - name: Deploy Code From Github
+      git: 
+        dest={{ website_dir }}
+        repo=https://github.com/jsutch/PHP-Algos.git
+        # update=yes
+        # force=yes
+
+    - name: copy vars file into place
+      copy: src=~/Programming/Ansible/DATA_VARIABLES dest={{ website_dir }}/DATA_VARIABLES  owner=ubuntu group=www-data mode=0644 backup=yes
+
+    - name: Pause for caches to clear
+      pause: seconds=1   
+
+
+  # handlers:
+  # tasks:
+
+
+  # tasks:
+  #   - name: Executing md5sum
+  #     command: 'md5sum  {{ website_dir }}/1-255.php >> {{ ubuntu_home }}/OUTPUT'

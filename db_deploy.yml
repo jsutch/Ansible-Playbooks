@@ -1,0 +1,28 @@
+---
+- hosts: test
+  vars: /www
+
+
+  tasks:
+    - name: Create website directory
+      file: dest={{ website_dir }} mode=775 owner=www-data group=www-data
+
+  tasks:
+    - name: Ensure git is installed
+      apt: name=git state=installed update_cache=true
+      notify: Deploy
+
+
+  handlers:
+  tasks:
+    - name: Deploy
+      git: 
+        repo=https://github.com/jsutch/Javascript-Algos.git
+        dest=/home/deploy/
+      remote_user: ubuntu
+
+    - name: Pause for caches to clear
+      pause: seconds=10         
+
+    - name: Execute 
+      command: /usr/bin/md5sum  /home/deploy/Javascript-Algos/1-255.js >> /home/ubuntu/output

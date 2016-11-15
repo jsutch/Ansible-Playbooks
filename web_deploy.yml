@@ -1,0 +1,33 @@
+---
+- hosts: web
+  vars: 
+    - website_dir: /www
+
+  tasks:
+    - name: Install Apache2
+      apt: name=apache2 state=installed update_cache=true
+  # tasks:
+    - name: Create website directory
+      file: dest={{ website_dir }} state=directory mode=775 owner=www-data group=www-data
+  # tasks:
+    - name: Ensure git is installed
+      apt: name=git state=installed update_cache=true
+
+
+    - name: Deploy Code From Github
+      git: 
+        repo=https://github.com/jsutch/Javascript-Algos.git
+        dest={{website_dir}}/
+      remote_user: ubuntu
+      notify: restart apache
+
+    - name: Pause for caches to clear
+      pause: seconds=10         
+
+    # - name: Execute md5sum
+      # command: /usr/bin/md5sum  /home/deploy/Javascript-Algos/1-255.js >> /home/ubuntu/output
+
+  handlers:
+    - name: restart apache
+      service: name=httpd state=restarted
+
